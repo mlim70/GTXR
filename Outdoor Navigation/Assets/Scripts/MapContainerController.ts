@@ -12,11 +12,12 @@ import {
 import { UpdateDispatcher } from "../SpectaclesInteractionKit/Utils/UpdateDispatcher";
 import { validate } from "../SpectaclesInteractionKit/Utils/validate";
 import { TWEEN_DURATION } from "./MapUIController";
+import { NorthIndicator } from "./NorthIndicator";
 
-const CONTAINER_SIZE_MINI = new vec2(10, 10);
-const CONTAINER_SIZE_FULL = new vec2(54.0, 54.0);
+const CONTAINER_SIZE_MINI = new vec2(20, 20);
+const CONTAINER_SIZE_FULL = new vec2(60.0, 60.0);
 const CONTAINER_DISTANCE_MINI = 130;
-const CONTAINER_DISTANCE_FULL = 160;
+const CONTAINER_DISTANCE_FULL = 225;
 
 @component
 export class MapContainerController extends BaseScriptComponent {
@@ -68,8 +69,31 @@ export class MapContainerController extends BaseScriptComponent {
       ContainerFrame.getTypeName()
     );
 
+    // Configure container frame appearance
+    this.container.border = 2; // Thin border for the circle
+    this.container.cutOut = true; // Make it circular
     this.container.setIsFollowing(this.mapComponent.startedAsMiniMap);
+    
+    // Set border alpha for subtle circular frame
+    (this.container as any).borderAlpha = 0.3;
 
+    // Create North indicator
+    const northIndicatorObj = global.scene.createSceneObject("NorthIndicator");
+    const textComponent = northIndicatorObj.createComponent("Component.Text");
+    textComponent.text = "N";
+    (textComponent as any).FontSize = 24;
+    
+    // Position the indicator at the top of the minimap
+    northIndicatorObj.setParent(this.sceneObject);
+    const transform = northIndicatorObj.getTransform();
+    transform.setLocalPosition(new vec3(0, 10, 2)); // Position above the map
+    
+    // Add the NorthIndicator script and set its text component
+    const northIndicator = northIndicatorObj.createComponent(NorthIndicator.getTypeName()) as NorthIndicator;
+
+    // Explicitly disable billboarding
+    this.container.setUseBillboarding(false);
+    
     this.container.followButton.onTrigger.add(
       this.handleFollowButtonTrigger.bind(this)
     );
@@ -179,18 +203,20 @@ export class MapContainerController extends BaseScriptComponent {
     if (isMiniMap) {
       this.mapComponent.centerMap();
 
-      // Calculate position for top left corner
+      // Configure circular frame for minimap
+      this.container.border = 2;
+      this.container.cutOut = true;
+      (this.container as any).borderAlpha = 0.3;
+
       const cameraForward = this.cameraTransform.forward;
       const cameraRight = this.cameraTransform.right;
       const cameraUp = this.cameraTransform.up;
-      
-      // Position in the top left corner, slightly offset from the edge
-      const offset = 0.1; // Small offset from the edge
+      const offset = 0.1;
       const targetWorldPosition = this.cameraPos
         .add(cameraForward.uniformScale(CONTAINER_DISTANCE_MINI))
         .add(cameraRight.uniformScale(-CONTAINER_DISTANCE_MINI * offset))
         .add(cameraUp.uniformScale(CONTAINER_DISTANCE_MINI * offset))
-        .add(new vec3(0, this.containerYOffset, 0)); // Add vertical offset to match camera height
+        .add(new vec3(0, this.containerYOffset, 0));
 
       this.tweenCancelFunction = makeTween((t) => {
         this.container.innerSize = vec2.lerp(
@@ -209,13 +235,17 @@ export class MapContainerController extends BaseScriptComponent {
         }
       }, TWEEN_DURATION);
     } else {
-      this.container.setIsFollowing(false);
+      // Configure regular frame for maximized view
+      this.container.border = 7;
+      this.container.cutOut = false;
+      (this.container as any).borderAlpha = 1.0;
 
-      const targetWorldPosition: vec3 = containerWorldPosition
-        .sub(this.cameraPos)
-        .normalize()
-        .uniformScale(CONTAINER_DISTANCE_FULL)
-        .add(this.cameraPos);
+      this.container.setIsFollowing(true);
+
+      const cameraForward = this.cameraTransform.forward;
+      const targetWorldPosition = this.cameraPos
+        .add(cameraForward.uniformScale(CONTAINER_DISTANCE_FULL))
+        .add(new vec3(0, this.containerYOffset, 0));
 
       this.tweenCancelFunction = makeTween((t) => {
         this.container.innerSize = vec2.lerp(
