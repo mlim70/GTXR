@@ -24,8 +24,8 @@ export class  Handler extends BaseScriptComponent {
 //        this.PlacesAPI = require("./SnapPlacesController.js");
     
         // TODO: replace these dummy coords with real GPS
-        const lat = 33.776;
-        const lng = -84.398;
+        const lat = 51.5072;
+        const lng = 0.1276;
     
         // now choosePlace will fetch nearby places internally
       }
@@ -36,7 +36,7 @@ export class  Handler extends BaseScriptComponent {
             // Convert the image texture to a Base64 string using the asynchronous API.
             const base64Image = await this.ImageToBase64(this.imageComponent);
             
-           const placesRequest = new Request("https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=33.777382,-84.396604&radius=20000&key=AIzaSyB7wSe9y3D-u4FMAPjl5TXupnSGh5eV3IU", {
+           const placesRequest = new Request("https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=51.5072,0.1276&radius=500&key=AIzaSyB7wSe9y3D-u4FMAPjl5TXupnSGh5eV3IU", {
                method: "GET",
             });
             

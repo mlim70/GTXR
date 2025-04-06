@@ -72,7 +72,7 @@ export class SpeechToText extends BaseScriptComponent {
     const responseCategories = (data['candidates'][0]['content']['parts'][0]['text']);
     const categoriesOutput = responseCategories.includes(',') ? responseCategories.split(',') : [];
 
-    const placesRequest = new Request("https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=33.777382,-84.396604&radius=7500&key=AIzaSyB7wSe9y3D-u4FMAPjl5TXupnSGh5eV3IU", {
+    const placesRequest = new Request("https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=51.5072,0.1276&radius=500&key=AIzaSyB7wSe9y3D-u4FMAPjl5TXupnSGh5eV3IU", {
       method: "GET"
     });
     
@@ -93,7 +93,7 @@ export class SpeechToText extends BaseScriptComponent {
         this.queryGemini(this.text.text).then(output => {
           const categories = output['categories'];
           const locations = output['locations']['results'];
-          const nSamples = 4;
+          const nSamples = 16;
           for (let i = 0; i < nSamples; i += 1) {
             const index = Math.floor(Math.random() * locations.length);
             const location = locations[index]['geometry']['location'];
